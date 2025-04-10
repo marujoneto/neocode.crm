@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow authenticated users to read and write their own user data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Allow admins to read all user data
+      allow read, write: if request.auth != null && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+    }
+    
+    // Allow access to account lockouts without authentication
+    // This is necessary to check lockout status before login
+    match /accountLockouts/{email} {
+      allow read, write: if true;
+    }
+    
+    // Allow authenticated users to read leads
+    match /leads/{leadId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow authenticated users to read students
+    match /students/{studentId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow authenticated users to read courses
+    match /courses/{courseId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow authenticated users to read notifications
+    match /notifications/{notificationId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow all authenticated users to read activity logs
+    match /activityLogs/{logId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Allow access to email templates
+    match /emailTemplates/{templateId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Allow access to companies
+    match /companies/{companyId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Allow access to contacts
+    match /contacts/{contactId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow access to all collections for authenticated users (temporary fix)
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
